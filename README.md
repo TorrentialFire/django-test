@@ -16,4 +16,8 @@ django-admin startproject mysite
 # To run the django app
 python manage.py collectstatic
 python manage.py runmodwsgi --reload-on-changes
+
+#python manage.py runmodwsgi --setup-only --port=80 \
+#    --user www-data --group www-data \
+#    --server-root=/etc/mod_wsgi-express-80
 ```
