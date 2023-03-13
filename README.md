@@ -12,4 +12,8 @@ pip install -r requirements.txt
 
 # create the project
 django-admin startproject mysite
+
+# To run the django app
+python manage.py collectstatic
+python manage.py runmodwsgi --reload-on-changes
 ```
