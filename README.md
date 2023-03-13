@@ -102,4 +102,6 @@ c.delete()
 ```bash
 # create an admin user
 python manage.py createsuperuser
+
+# Goto http://<site_url>/admin
 ```
