@@ -1,2 +1,4 @@
-mod-wsgi-standalone==4.9.4
-Django==4.1.7
+python-ldap>=3.0
+django-auth-ldap
+mod-wsgi-standalone
+Django

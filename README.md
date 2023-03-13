@@ -118,3 +118,102 @@ python -c "import django; print(django.__path__)"
 # Copy the template to be modified into the project-wide templates dir
 cp /home/zero/.virtualenvs/local-django/lib/python3.10/site-packages/django/contrib/admin/templates/admin/base_site.html ./templates/admin/base_site.html 
 ```
+
+## LDAP
+
+```bash
+# Ubuntu 22.04 (openldap may already be installed, but this command installs)
+sudo apt-get update && sudo apt-get install libldap-2.5-0 libldap-dev -y
+
+# Required libraries for python-ldap
+sudo apt-get update && sudo apt-get install libsasl2-dev ldap-utils -y
+```
+
+Add the following to `requirements.txt`:
+
+```
+python-ldap>=3.0
+django-auth-ldap
+```
+
+Test using a local ldap server deployed via docker:
+[https://github.com/rroemhild/docker-test-openldap](https://github.com/rroemhild/docker-test-openldap)
+
+
+`project/settings.py`:
+```python
+import ldap
+from django_auth_ldap.config import LDAPSearch
+
+#...
+
+# Begin Authentication and LDAP Support
+
+AUTHENTICATION_BACKENDS = [
+    "django_auth_ldap.backend.LDAPBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# Set up LDAP server and user search parameters.
+AUTH_LDAP_SERVER_URI = "ldap://localhost:10389"
+AUTH_LDAP_BIND_DN = "cn=admin,dc=planetexpress,dc=com"
+AUTH_LDAP_BIND_PASSWORD = "GoodNewsEveryone"
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    "ou=people,dc=planetexpress,dc=com",
+    ldap.SCOPE_SUBTREE,
+    "(uid=%(user)s)"
+)
+
+# Set up the basic group parameters.
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    'ou=people,dc=planetexpress,dc=com',
+    ldap.SCOPE_SUBTREE,
+    '(objectClass=groupOfNames)',
+)
+AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr='cn')
+
+# Populate the Django user from the LDAP directory.
+AUTH_LDAP_USER_ATTR_MAP = {
+    'first_name': 'givenName',
+    'last_name': 'sn',
+    'email': 'mail',
+}
+
+# Simple group restrictions
+AUTH_LDAP_REQUIRE_GROUP = 'cn=admin_staff,ou=people,dc=planetexpress,dc=com'
+AUTH_LDAP_DENY_GROUP = 'cn=ship_crew,ou=people,dc=planetexpress,dc=com'
+
+# This is the default, but I like to be explicit.
+AUTH_LDAP_ALWAYS_UPDATE_USER = True
+
+# Use LDAP group membership to calculate group permissions.
+AUTH_LDAP_FIND_GROUP_PERMS = True
+
+# Important boolean fields defined by group membership
+# Values in this dictionary may be simple DNs (as strings), lists or tuples of DNs, or LDAPGroupQuery instances. Lists are converted to queries joined by |.
+AUTH_LDAP_USER_FLAGS_BY_GROUP = {
+    #"is_active": "cn=active,ou=groups,dc=example,dc=com",
+    "is_staff": (
+        LDAPGroupQuery("cn=admin_staff,ou=people,dc=planetexpress,dc=com")
+        #| LDAPGroupQuery("cn=admin,ou=groups,dc=example,dc=com")
+    ),
+    "is_superuser": "cn=admin_staff,ou=people,dc=planetexpress,dc=com",
+}
+
+# Cache distinguished names and group memberships for an hour to minimize
+# LDAP traffic.
+AUTH_LDAP_CACHE_TIMEOUT = 3600
+
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "handlers": {"console": {"class": "logging.StreamHandler"}},
+#     "loggers": {"django_auth_ldap": {"level": "DEBUG", "handlers": ["console"]}},
+# }
+
+# End LDAP configuration
+```
+
+Login as user `professor` with password `professor`, or `hermes`/`hermes`. 
+
+Attempting to login as a member of `ship_crew` will fail on the admin site.
