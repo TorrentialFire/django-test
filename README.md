@@ -19,6 +19,9 @@ django-admin startproject mysite
 python manage.py collectstatic
 python manage.py runmodwsgi --reload-on-changes
 
+# Run the app more concisely
+python manage.py collectstatic --noinput && python manage.py runmodwsgi --reload-on-changes
+
 #python manage.py runmodwsgi --setup-only --port=80 \
 #    --user www-data --group www-data \
 #    --server-root=/etc/mod_wsgi-express-80

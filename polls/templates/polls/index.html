@@ -1,6 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Latest Questions{% endblock title %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+{% endblock head %}
 
 {% block content %}
     {% if latest_question_list %}
