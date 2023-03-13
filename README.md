@@ -108,3 +108,13 @@ python manage.py createsuperuser
 
 # Goto http://<site_url>/admin
 ```
+
+## Template customization
+
+```bash 
+# Locate the template directory for Django
+python -c "import django; print(django.__path__)"
+
+# Copy the template to be modified into the project-wide templates dir
+cp /home/zero/.virtualenvs/local-django/lib/python3.10/site-packages/django/contrib/admin/templates/admin/base_site.html ./templates/admin/base_site.html 
+```
