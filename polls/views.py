@@ -3,30 +3,60 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.db.models import F
+from django.views import generic
 
 from .models import Choice, Question
 
 # Create your views here.
-def index(request):
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    context = {
-        'latest_question_list': latest_question_list,
-    }
-    return render(request, 'polls/index.html', context)
+
+# Generic/Class-based views docs: https://docs.djangoproject.com/en/4.1/topics/class-based-views/
+class IndexView(generic.ListView):
+    template_name = 'polls/index.html'
+    context_object_name = 'latest_question_list'
+
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Question.objects.order_by('-pub_date')[:5]
+
+#def index(request):    
+    # Non-generic
+    #latest_question_list = Question.objects.order_by('-pub_date')[:5]
+    #context = {
+    #    'latest_question_list': latest_question_list,
+    #}
+    #return render(request, 'polls/index.html', context)
+    
+    # Placeholder
     #return HttpResponse("Hello, world. You're at the polls index.")
 
-def detail(request, question_id):
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = 'polls/detail.html'
+
+#def detail(request, question_id):
+    # Non-generic without shortcut
     #try:
     #    question = Question.objects.get(pk=question_id)
     #except Question.DoesNotExist:
     #    raise Http404("Question does not exist")
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/detail.html', {'question': question})
+    
+    # Non-generic with shortcut
+    #question = get_object_or_404(Question, pk=question_id)
+    #return render(request, 'polls/detail.html', {'question': question})
+    
+    # Placeholder
     #return HttpResponse("You're looking at question {}.".format(question_id))
 
-def results(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/results.html', {'question': question})
+class ResultsView(generic.DeleteView):
+    model = Question
+    template_name = 'polls/results.html'
+
+#def results(request, question_id):
+    # Non-generic
+    #question = get_object_or_404(Question, pk=question_id)
+    #return render(request, 'polls/results.html', {'question': question})
+
+    # Placeholder
     #return HttpResponse("You're looking at the results of question {}.".format(question_id))
 
 def vote(request, question_id):
